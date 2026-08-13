@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 300" role="img" aria-label="GigClip logo">
+  <title>GigClip</title>
+
+  <!-- Badge: paper-white sticker disc -->
+  <circle cx="160" cy="150" r="104" fill="#ffffff" stroke="#000000" stroke-width="3" />
+
+  <!-- G letterform (chunky, Lateral/Bowlby-style) -->
+  <path
+    d="M160 86 A64 64 0 1 0 215 182 L177 182"
+    fill="none"
+    stroke="#000000"
+    stroke-width="44"
+    stroke-linecap="butt"
+    stroke-linejoin="round"
+  />
+
+  <!-- Sunburst coin sticker, top right -->
+  <g transform="rotate(-12 248 70)">
+    <rect x="216" y="38" width="64" height="64" rx="18" fill="#ffd731" stroke="#000000" stroke-width="3" />
+    <rect x="230" y="64" width="36" height="12" fill="#000000" />
+    <rect x="242" y="52" width="12" height="36" fill="#000000" />
+  </g>
+
+  <!-- Mint check sticker, bottom right -->
+  <g transform="rotate(10 286 249)">
+    <rect x="262" y="225" width="48" height="48" rx="14" fill="#55db9c" stroke="#000000" stroke-width="3" />
+    <path
+      d="M272 246 L282 258 L300 236"
+      fill="none"
+      stroke="#000000"
+      stroke-width="9"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    />
+  </g>
+
+  <!-- Voltage violet pin sticker, bottom left -->
+  <g transform="rotate(8 66 254)">
+    <rect x="38" y="226" width="56" height="56" rx="16" fill="#5c4ade" stroke="#000000" stroke-width="3" />
+    <circle cx="66" cy="254" r="9" fill="#000000" />
+    <path d="M66 263 L66 276" stroke="#000000" stroke-width="9" stroke-linecap="round" />
+  </g>
+</svg>
