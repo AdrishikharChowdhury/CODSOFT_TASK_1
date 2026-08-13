@@ -16,17 +16,35 @@ export default function Navbar() {
 
     if (sections.length === 0) return;
 
-    const observer = new IntersectionObserver(
-      (entries) => {
-        for (const entry of entries) {
-          if (entry.isIntersecting) setActiveHref(`#${entry.target.id}`);
-        }
-      },
-      { rootMargin: "-45% 0px -50% 0px" }
-    );
+    function updateActive() {
+      const probe = window.scrollY + window.innerHeight * 0.4;
+      let current: string | null = null;
 
-    sections.forEach((section) => observer.observe(section));
-    return () => observer.disconnect();
+      for (const section of sections) {
+        const top = section.getBoundingClientRect().top + window.scrollY;
+        const bottom = top + section.offsetHeight;
+        if (probe >= top && probe < bottom) {
+          current = `#${section.id}`;
+        }
+      }
+
+      if (!current && sections.length > 0) {
+        const last = sections[sections.length - 1];
+        const lastBottom =
+          last.getBoundingClientRect().top + window.scrollY + last.offsetHeight;
+        if (probe >= lastBottom) current = `#${last.id}`;
+      }
+
+      setActiveHref(current);
+    }
+
+    updateActive();
+    window.addEventListener("scroll", updateActive, { passive: true });
+    window.addEventListener("resize", updateActive);
+    return () => {
+      window.removeEventListener("scroll", updateActive);
+      window.removeEventListener("resize", updateActive);
+    };
   }, []);
 
   function handleClick(
