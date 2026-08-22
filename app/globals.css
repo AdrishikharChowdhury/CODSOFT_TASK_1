@@ -81,6 +81,18 @@
   --radius-buttons: 1600px;
   --radius-wallet-icon: 16px;
   --radius-cards-elevated: 40px;
+
+  /* Animation */
+  --animate-marquee-y: marquee-y 28s linear infinite;
+
+  @keyframes marquee-y {
+    from {
+      transform: translateY(0);
+    }
+    to {
+      transform: translateY(-50%);
+    }
+  }
 }
 
 @theme inline {

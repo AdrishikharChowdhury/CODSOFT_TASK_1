@@ -1,4 +1,5 @@
 import Banner from "@/components/landing/Banner";
+import Contact from "@/components/landing/Contact";
 import FAQ from "@/components/landing/FAQ";
 import HIW from "@/components/landing/HIW";
 import Jobs from "@/components/landing/Jobs";
@@ -12,6 +13,7 @@ export default function Home() {
       <Jobs />
       <HIW />
       <FAQ />
+      <Contact/>
     </div>
   );
 }
