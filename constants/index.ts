@@ -1,10 +1,4 @@
-import { FeedbackCard } from "@/types/type";
-
-export type LandingLink = {
-  href: string;
-  label: string;
-  cta?: boolean;
-};
+import { FeedbackCard, LandingLink } from "@/types/type";
 
 export const landingLinks: LandingLink[] = [
   { href: "#home", label: "Home" },
@@ -136,3 +130,32 @@ export const AVATAR_COLORS = [
   "bg-electric-blue",
   "bg-ember",
 ];
+
+export const MARQUEE_ITEMS = [
+  "Find the perfect job for you",
+  "New roles added daily",
+  "Apply in under a minute",
+  "Track every application",
+];
+
+export const NAVIGATE_LINKS = [
+  { href: "#home", label: "Home" },
+  { href: "#jobs", label: "Jobs" },
+  { href: "#how-it-works", label: "How It Works" },
+  { href: "#faq", label: "FAQ" },
+  { href: "#contact", label: "Contact" },
+];
+
+export const JOB_TYPE_LINKS = [
+  { label: "Full-Time", glyph: "FT", color: "bg-sunburst" },
+  { label: "Part-Time", glyph: "PT", color: "bg-mint-pop" },
+  { label: "Contract", glyph: "CT", color: "bg-lavender" },
+  { label: "Internship", glyph: "IN", color: "bg-electric-blue" },
+  { label: "Remote", glyph: "RE", color: "bg-voltage-violet" },
+];
+
+export const COLUMN_TITLE_CLASS =
+  "mb-4 text-[12px] font-bold uppercase tracking-[0.032em] text-paper-white/50";
+
+export const LINK_CLASS =
+  "text-[14px] font-medium tracking-[-0.01px] text-paper-white/70 transition-colors hover:text-paper-white";
