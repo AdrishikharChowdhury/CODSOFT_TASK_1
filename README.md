@@ -1,182 +1,440 @@
-# GigClip — Job Builder
+# GigClip
 
-A pastel sticker-styled job board built with **Next.js (App Router)** and **MongoDB**. Candidates clip on a resume and apply in under a minute; employers post roles and move applicants through `submitted → reviewing → interview → offered`.
+A pastel sticker-styled job board where candidates apply in under a minute and employers move applicants through a visible hiring pipeline:
+
+`submitted → reviewing → interview → offered` (or `rejected`).
+
+GigClip runs on **two databases on purpose**: **Neon (Postgres)** owns identity — the `users → employee_profiles / employer_profiles` relationship — while **MongoDB** owns the flexible, fast-moving documents: jobs, applications, and resumes.
+
+---
+
+## Table of Contents
+
+- [Features](#features)
+- [Tech Stack](#tech-stack)
+- [Architecture](#architecture)
+- [Data Model](#data-model)
+  - [Neon / Postgres](#neon--postgres-drizzle-orm)
+  - [MongoDB](#mongodb-mongoose)
+  - [Rules Across Both Stores](#rules-across-both-stores)
+- [Authentication](#authentication)
+- [Validation](#validation)
+- [Project Structure](#project-structure)
+- [Getting Started](#getting-started)
+- [Scripts](#scripts)
+- [Design System](#design-system)
+- [Implementation Status](#implementation-status)
+- [Demo Accounts](#demo-accounts)
+- [License](#license)
+
+---
+
+## Features
+
+**Candidates (`employee`)**
+
+- Sign up with name, email, password, job title, skills, and a short bio.
+- Skills are typed as a comma-separated string and normalized to `string[]` before they ever reach the database.
+- Apply to a role with one resume attachment (PDF/DOC/DOCX/TXT/ODT, ≤ 5 MB) and an optional cover note.
+- Track every application's status in-app.
+
+**Employers (`employer`)**
+
+- Sign up with name, email, password, company, and a company bio.
+- Post job listings with type, location, salary range, openings, and tags.
+- Review applicants per job and advance them through the pipeline.
+- Only the employer who owns a job can see the resumes submitted to it.
+
+**Everyone**
+
+- Landing page with hero, job categories, how-it-works, FAQ, testimonials, and contact.
+- Split auth screens (form + animated Lottie poster).
+- Inline, per-field validation with accessible labels and error messaging.
+
+---
 
 ## Tech Stack
 
-| Layer     | Tech                                    |
-| --------- | --------------------------------------- |
-| Framework | Next.js 16 (App Router, Server Actions) |
-| Database  | MongoDB                                 |
-| ODM       | Mongoose                                |
-| Styling   | Tailwind CSS v4                         |
+| Layer            | Choice                                                             |
+| ---------------- | ------------------------------------------------------------------ |
+| Framework        | Next.js 16 (App Router, Turbopack, Server Actions)                 |
+| Language         | TypeScript                                                         |
+| UI               | React 19, Tailwind CSS v4, shadcn/ui (`base-vega`), lucide-react   |
+| Auth             | Auth.js (NextAuth v5, beta) — Credentials provider, JWT sessions   |
+| Relational DB    | Neon Postgres via `@neondatabase/serverless` (HTTP)                |
+| ORM (SQL)        | Drizzle ORM + drizzle-kit                                          |
+| Document DB      | MongoDB via Mongoose                                               |
+| Validation       | Zod                                                                |
+| Forms            | react-hook-form + `@hookform/resolvers`                            |
+| Passwords        | bcrypt (12 salt rounds)                                            |
+| File storage     | Cloudinary (resumes, company logos)                                |
+| Motion / Visuals | `@lottiefiles/dotlottie-react`, `ogl` (WebGL background)           |
+| Notifications    | Sonner                                                             |
 
-## Getting Started
+---
 
-```bash
-npm install
-npm run dev      # http://localhost:3000
-```
-
-### Environment Variables
-
-Create `.env.local`:
-
-```env
-MONGODB_URI=mongodb://localhost:27017/gigclip
-```
-
-## NoSQL Project Structure
+## Architecture
 
 ```
-job-builder/
-├── app/
-│   ├── (auth)/                  # Auth pages (no navbar shell)
-│   │   ├── sign-in/
-│   │   ├── sign-up/
-│   │   └── sign-out/
-│   ├── (root)/                  # Public landing pages (navbar shell)
-│   ├── api/                     # Route handlers (thin, delegate to lib/)
-│   │   ├── jobs/
-│   │   │   ├── route.ts             # GET list, POST create
-│   │   │   └── [id]/route.ts        # GET one, PATCH update, DELETE
-│   │   ├── applications/
-│   │   │   ├── route.ts             # GET mine, POST apply
-│   │   │   └── [id]/status/route.ts # PATCH status transitions
-│   │   └── resumes/
-│   │       └── route.ts             # POST upload, GET my resumes
-│   ├── layout.tsx               # Root layout (fonts, globals.css)
-│   └── globals.css              # Tailwind v4 theme tokens
-├── components/                  # UI only — no DB access here
-├── constants/                   # Shared constants & enums source of truth
-├── lib/
-│   ├── mongodb.ts               # Cached connection singleton
-│   ├── db/                      # Data-access layer (queries live here)
-│   │   ├── users.ts             #   findUserByEmail, createUser ...
-│   │   ├── jobs.ts              #   listJobs, getJobById, createJob ...
-│   │   ├── applications.ts      #   applyToJob, updateStatus ...
-│   │   └── resumes.ts
-│   ├── models/                  # One Mongoose model per collection
-│   │   ├── user.model.ts
-│   │   ├── job.model.ts
-│   │   ├── application.model.ts
-│   │   └── resume.model.ts
-│   └── utils.ts                 # cn() class merger
-└── types/                       # Inferred TS types (zod or mongoose infer)
+┌──────────────────────────────┐
+│      Next.js App Router      │
+│  (RSC pages + client forms)  │
+└───────────────┬──────────────┘
+                │ validated input (Zod)
+     ┌──────────┴──────────┐
+     │                     │
+┌────▼─────────────┐  ┌────▼──────────────┐
+│ Neon / Postgres  │  │     MongoDB       │
+│ Drizzle ORM      │  │   Mongoose ODM    │
+│                  │  │                   │
+│ users            │  │ jobs              │
+│ employee_profiles│  │ applications      │
+│ employer_profiles│  │ resumes           │
+└──────────────────┘  └───────────────────┘
+     identity &             content &
+     role integrity         workflow data
 ```
 
-### Layering Rules
+**Why two databases instead of one?**
 
-1. **`lib/models`** — schema definitions only. No business logic.
-2. **`lib/db`** — all queries/mutations. The only place allowed to touch models.
-3. **`app/api`** / Server Actions — validate input, call `lib/db`, shape responses. Never query collections directly from routes or components.
+- **Postgres for identity.** Roles, unique emails, one-to-one profile rows, and cascade deletes are exactly what foreign keys and enums are for. Auth.js also wants a stable, relational user record.
+- **MongoDB for the work.** A job posting is read as one document; an application carries an embedded, append-only `timeline`; resumes are metadata pointing at Cloudinary blobs. These are document-shaped, evolve per feature, and never need multi-table joins.
+- **No cross-database foreign keys.** References between stores are stored as plain IDs (`userId` as a string in Mongo) and treated as logical references — see [Rules Across Both Stores](#rules-across-both-stores).
 
-### Connection Singleton (`lib/mongodb.ts`)
+### Layering
 
-Serverless platforms create a new function instance per request; without caching each invocation opens a new socket. Use the classic global-cache pattern:
+| Layer                          | Responsibility                                                       |
+| ------------------------------ | -------------------------------------------------------------------- |
+| `app/**`                       | Pages, layouts, route handlers. Thin: validate, call `lib/db`, return. |
+| `components/**`                | Presentation and form state only — never touches a database.         |
+| `lib/schema.ts`                | Shared Zod contracts used by forms **and** server-side validation.   |
+| `lib/db/*.ts`                  | Data access. The only place allowed to run Drizzle or Mongoose queries. |
+| `lib/db/schema.ts`             | Drizzle table definitions (source of truth for Postgres).            |
+| `lib/auth/password.ts`         | Password hashing/verification.                                       |
+| `auth.ts`                      | Auth.js configuration, providers, and session callbacks.             |
+| `drizzle/`                     | Generated SQL migrations and snapshots.                              |
 
-```ts
-import mongoose from "mongoose";
+---
 
-const MONGODB_URI = process.env.MONGODB_URI!;
+## Data Model
 
-interface ConnCache {
-  conn: typeof mongoose | null;
-  promise: Promise<typeof mongoose> | null;
-}
+### Neon / Postgres (`Drizzle ORM`)
 
-const global_ = globalThis as unknown as { _mongoose?: ConnCache };
-const cache: ConnCache = global_._mongoose ?? { conn: null, promise: null };
-global_._mongoose = cache;
+Defined in `lib/db/schema.ts`.
 
-export async function connectDB() {
-  if (cache.conn) return cache.conn;
-  if (!cache.promise) {
-    cache.promise = mongoose.connect(MONGODB_URI, { dbName: "gigclip" });
-  }
-  cache.conn = await cache.promise;
-  return cache.conn;
-}
+```
+users
+ ├─ 1:1 ─ employee_profiles   (role = 'employee')
+ └─ 1:1 ─ employer_profiles   (role = 'employer')
 ```
 
-Every entry point (`app/api/**`, actions) calls `await connectDB()` first.
+#### `users`
 
-## Collections & Schemas
+| Column         | Type                        | Notes                          |
+| -------------- | --------------------------- | ------------------------------ |
+| `id`           | `uuid`                      | PK, `defaultRandom()`          |
+| `name`         | `text`                      | required                       |
+| `email`        | `text`                      | required, unique, lowercased   |
+| `password_hash`| `text`                      | bcrypt hash, never selected into UI |
+| `role`         | `user_role` enum            | `employee` \| `employer`       |
+| `created_at`   | `timestamptz`               | defaults to `now()`            |
+| `updated_at`   | `timestamptz`               | defaults to `now()`            |
 
-### `users`
+#### `employee_profiles`
 
-One collection for both roles — role-based fields instead of separate tables (document modeling favors fewer collections).
+| Column     | Type       | Notes                                   |
+| ---------- | ---------- | --------------------------------------- |
+| `id`       | `uuid`     | PK                                      |
+| `user_id`  | `uuid`     | unique, FK → `users.id`, `ON DELETE CASCADE` |
+| `job_title`| `text`     | required                                |
+| `skills`   | `text[]`   | defaults to `'{}'`                      |
+| `bio`      | `text`     | 20–100 characters enforced in Zod       |
 
-| Field         | Type                              | Notes                                  |
-| ------------- | --------------------------------- | -------------------------------------- |
-| `_id`         | ObjectId                          | auto                                   |
-| `name`        | String                            | required                               |
-| `email`       | String                            | required, unique index, lowercase      |
-| `passwordHash`| String                            | bcrypt hash, select: false             |
-| `role`        | Enum `candidate \| employer`      | required, indexed                      |
-| `companyName` | String?                           | employers only                         |
-| `headline`    | String?                           | candidates only                        |
-| `timestamps`  | createdAt / updatedAt             | automatic                              |
+#### `employer_profiles`
 
-### `jobs`
+| Column    | Type   | Notes                                        |
+| --------- | ------ | -------------------------------------------- |
+| `id`      | `uuid` | PK                                           |
+| `user_id` | `uuid` | unique, FK → `users.id`, `ON DELETE CASCADE` |
+| `company` | `text` | required                                     |
+| `bio`     | `text` | 20–100 characters enforced in Zod            |
 
-| Field          | Type                                                        | Notes                    |
-| -------------- | ----------------------------------------------------------- | ------------------------ |
-| `_id`          | ObjectId                                                    | auto                     |
-| `employerId`   | ObjectId → `users._id`                                      | required, indexed        |
-| `title`        | String                                                      | required, text-indexed   |
-| `description`  | String                                                      | required                 |
-| `type`         | Enum `full-time \| part-time \| contract \| internship \| remote` | indexed            |
-| `location`     | String                                                      |                          |
-| `salaryMin` / `salaryMax` | Number?                                          |                          |
-| `openings`     | Number                                                      | default 1                |
-| `tags`         | String[]                                                    | denormalized search aid  |
-| `status`       | Enum `open \| closed \| draft`                              | default `draft`, indexed |
+**Why split the profiles out?**
 
-### `resumes`
+The `users` table stays the single place Auth.js and the session can trust. Role-specific fields live behind a one-to-one row, so candidate data never pollutes employer rows (and vice versa), and a future third role is additive rather than a schema rewrite.
 
-Kept separate from `users`: a candidate may keep several versions, and applications reference the exact version used.
+> **Migration note:** `lib/db/schema.ts` is the source of truth. The SQL currently checked into `drizzle/` was generated from an earlier draft (it uses `username` / `company_name` / `company_website`). Run `npx drizzle-kit generate` before `npx drizzle-kit migrate` so the migration matches the tables above.
 
-| Field        | Type                     | Notes             |
-| ------------ | ------------------------ | ----------------- |
-| `candidateId`| ObjectId → `users._id`   | indexed           |
-| `fileName`   | String                   | original name     |
-| `fileUrl`    | String                   | blob storage URL  |
-| `mimeType`   | String                   | pdf/docx/etc.     |
-| `sizeBytes`  | Number                   | enforce ≤ 5 MB    |
+### MongoDB (`Mongoose`)
 
-### `applications`
+Planned collections — the Mongoose models and `lib/db` queries are the next implementation step.
 
-The join-heavy collection — designed around the employer's review workflow.
+#### `jobs`
 
-| Field         | Type                                                                  | Notes                             |
-| ------------- | --------------------------------------------------------------------- | --------------------------------- |
-| `jobId`       | ObjectId → `jobs._id`                                                 | required                          |
-| `candidateId` | ObjectId → `users._id`                                                | required                          |
-| `resumeId`    | ObjectId → `resumes._id`                                              | immutable snapshot of what was sent|
-| `coverNote`   | String?                                                               | short note, ≤ 1000 chars          |
-| `status`      | Enum `submitted \| reviewing \| interview \| offered \| rejected`     | default `submitted`, indexed      |
-| `timeline`    | Embedded array `{ status, at }`                                       | append-only audit trail           |
-| `timestamps`  | createdAt / updatedAt                                                 | automatic                         |
+| Field            | Type                                                              | Notes                     |
+| ---------------- | ----------------------------------------------------------------- | ------------------------- |
+| `_id`            | `ObjectId`                                                        | auto                      |
+| `employerId`     | `String`                                                          | Postgres `users.id`, indexed |
+| `company`        | `String`                                                          | denormalized from the employer profile |
+| `title`          | `String`                                                          | required, text index      |
+| `description`    | `String`                                                          | required                  |
+| `type`           | enum `full-time \| part-time \| contract \| internship \| remote` | indexed                   |
+| `location`       | `String`                                                          |                           |
+| `salaryMin` / `salaryMax` | `Number?`                                                |                           |
+| `openings`       | `Number`                                                          | default `1`               |
+| `tags`           | `String[]`                                                        | search/display aid        |
+| `status`         | enum `open \| closed \| draft`                                    | default `draft`, indexed  |
+| timestamps       | `createdAt` / `updatedAt`                                         | automatic                 |
+
+#### `resumes`
+
+Kept separate from the user record: a candidate can hold several versions, and each application snapshots the exact one it was sent with.
+
+| Field         | Type     | Notes                             |
+| ------------- | -------- | --------------------------------- |
+| `candidateId` | `String` | Postgres `users.id`, indexed      |
+| `fileName`    | `String` | original upload name              |
+| `fileUrl`     | `String` | Cloudinary secure URL             |
+| `mimeType`    | `String` | pdf, docx, txt, odt               |
+| `sizeBytes`   | `Number` | reject > 5 MB at upload           |
+
+#### `applications`
+
+| Field         | Type                                                            | Notes                            |
+| ------------- | --------------------------------------------------------------- | -------------------------------- |
+| `jobId`       | `ObjectId` → `jobs._id`                                         | required                         |
+| `candidateId` | `String`                                                        | Postgres `users.id`, required    |
+| `resumeId`    | `ObjectId` → `resumes._id`                                      | immutable snapshot               |
+| `coverNote`   | `String?`                                                       | ≤ 1000 characters                |
+| `status`      | enum `submitted \| reviewing \| interview \| offered \| rejected` | default `submitted`, indexed   |
+| `timeline`    | embedded `[{ status, at }]`                                     | append-only audit trail          |
+| timestamps    | `createdAt` / `updatedAt`                                       | automatic                        |
 
 **Indexes**
 
 ```js
-applicationSchema.index({ jobId: 1, candidateId: 1 }, { unique: true }); // one application per job per candidate
-applicationSchema.index({ jobId: 1, status: 1 });                        // employer pipeline views
+applicationSchema.index({ jobId: 1, candidateId: 1 }, { unique: true });
+applicationSchema.index({ jobId: 1, status: 1 });
+jobSchema.index({ employerId: 1, status: 1 });
+jobSchema.index({ title: "text", description: "text" });
 ```
 
-## NoSQL Modeling Decisions
+The unique compound index enforces "one application per job per candidate" at the database level, not just in UI logic.
 
-- **Embed vs reference**: small read-together data is embedded (e.g., `timeline` inside an application); anything reused across documents is referenced by `ObjectId`.
-- **Denormalization for reads**: hot display fields (e.g., job `title` on an application card) are copied at write time so listing queries need zero `$lookup`s. Accept the small staleness trade-off.
-- **Enums everywhere**: statuses and job types live as Mongoose enums mirrored from `constants/index.ts`, so invalid states can't be persisted.
-- **Status transitions** are validated in `lib/db/applications.ts` (e.g., `submitted → reviewing`, never `offered → submitted`) before hitting the DB.
+**Modeling choices**
+
+- **Embed what is read together.** An application's `timeline` is embedded, so a pipeline view is a single document read.
+- **Reference what is shared.** Jobs, resumes, and users are referenced by ID rather than duplicated wholesale.
+- **Denormalize display fields.** Application cards copy the job `title` and `company` at write time so listings need zero `$lookup`s. Small staleness risk, large read win.
+- **Enums over free strings.** Statuses are mirrored in `constants/` so transitions can be validated against one list.
+- **Server-side transitions only.** `lib/db/applications.ts` must reject backwards moves (e.g. `offered → submitted`) regardless of what the client sends.
+
+### Rules Across Both Stores
+
+1. **IDs are logical, not physical.** Mongo documents store `employerId` / `candidateId` as the Postgres UUID string. There is no referential integrity between engines — deleting a user requires an explicit cleanup step for their Mongo documents.
+2. **Denormalize what crosses the boundary.** Because you can't join Postgres and Mongo, copy the fields you display (`company`, `jobTitle`) at write time.
+3. **Never store Mongo ObjectIds in Postgres columns.** Postgres owns identity; Mongo owns content.
+4. **One place for queries.** Pages, components, and route handlers never call Drizzle or Mongoose directly — everything goes through `lib/db`.
+
+---
+
+## Authentication
+
+Auth.js is configured in `auth.ts` with a **Credentials** provider and **JWT** sessions:
+
+1. `authorize()` validates credentials with `signInSchema`.
+2. The user is looked up by lowercased email via `getUserByEmail()` (`lib/db/user.db.ts`).
+3. The submitted password is compared against `password_hash` with bcrypt (12 rounds).
+4. `role` and `id` are written into the JWT and re-exposed on `session.user`.
+
+The session and JWT types are augmented in `types/next-auth.d.ts`, so `session.user.role` is typed as `"employee" | "employer"` everywhere.
+
+Route handlers are mounted at `app/api/auth/[...nextauth]/route.ts`, and the sign-in page is set to `/sign-in`.
+
+**Sign-up** additionally needs to create the `users` row plus the matching profile row in a single transaction, hash the password with `hashPassword()`, and decide the `role` from the form toggle (`employee` / `employer`). That endpoint is not written yet — the forms currently stop at a success toast.
+
+---
+
+## Validation
+
+One set of Zod schemas in `lib/schema.ts` drives both client forms and (future) API validation:
+
+| Schema            | Fields                                                                 | Rules                                                        |
+| ----------------- | ---------------------------------------------------------------------- | ------------------------------------------------------------ |
+| `employeeSchema`  | `name`, `email`, `password`, `jobTitle`, `skills`, `bio`, `role`        | name 5–32, bio 20–100, password ≥ 8, skills ≥ 1 after parsing |
+| `employerSchema`  | `name`, `email`, `password`, `company`, `bio`, `role`                   | name 5–32, company ≥ 2, bio 20–100, password ≥ 8             |
+| `signInSchema`    | `email`, `password`                                                    | valid email, non-empty password                              |
+
+`skills` accepts `"Figma, Research, Prototyping"` from the UI and is preprocessed into `["Figma", "Research", "Prototyping"]` before validation, so the payload the backend receives is always a real array.
+
+**Client component rule:** import schemas inside the client component. Passing a schema object as a prop from a server component fails, because functions are not serializable across the RSC boundary.
+
+Exports: `EmployeeValues`, `EmployerValues`, `SignInValues`.
+
+---
+
+## Project Structure
+
+```
+job-builder/
+├── app/
+│   ├── (auth)/                       # Split auth screens (no navbar)
+│   │   ├── layout.tsx                # WebGL background shell
+│   │   ├── sign-in/page.tsx          # form + Lottie poster
+│   │   └── sign-up/page.tsx          # poster + role-aware form
+│   ├── (root)/                       # Public landing route group
+│   │   ├── layout.tsx                # Navbar + full-bleed Footer
+│   │   └── page.tsx                  # Banner → Jobs → HIW → FAQ → Contact
+│   ├── api/
+│   │   └── auth/[...nextauth]/route.ts
+│   ├── globals.css                   # Tailwind v4 theme tokens + animations
+│   └── layout.tsx                    # Fonts, metadata, Toaster
+├── auth.ts                           # Auth.js config (Credentials + JWT)
+├── components/
+│   ├── auth/                         # AuthForm, SUPForm, SINForm, Poster
+│   ├── landing/                      # Banner, Jobs, HIW, FAQ, Contact, Footer, Navbar...
+│   ├── ui/                           # shadcn primitives
+│   └── GradientWaves.tsx             # Decorative WebGL waves
+├── constants/index.ts                # Nav links + typed form field configs
+├── drizzle/                          # Generated SQL migrations
+├── drizzle.config.ts                 # Drizzle-kit config (Postgres / Neon)
+├── lib/
+│   ├── auth/password.ts              # bcrypt hash + verify
+│   ├── db/
+│   │   ├── index.ts                  # Neon client + Drizzle instance
+│   │   ├── schema.ts                 # users, employee_profiles, employer_profiles
+│   │   └── user.db.ts                # getUserByEmail, getUserById
+│   ├── schema.ts                     # Zod contracts + inferred types
+│   └── utils.ts                      # cn()
+├── types/
+│   ├── next-auth.d.ts                # Session/JWT augmentation
+│   └── type.d.ts                     # Shared UI types
+├── DESIGN.md                         # The Slush design system
+└── README.md
+```
+
+---
+
+## Getting Started
+
+### 1. Install
+
+```bash
+npm install
+```
+
+### 2. Configure environment
+
+Create `.env.local` in the project root:
+
+| Variable                | Required | Purpose                                                        |
+| ----------------------- | -------- | -------------------------------------------------------------- |
+| `DATABASE_URL`          | yes      | Neon Postgres connection string (use the **pooled** host)       |
+| `AUTH_SECRET`           | yes      | Auth.js JWT signing secret (`npx auth secret` or `openssl rand -base64 32`) |
+| `MONGODB_URI`           | yes\*    | MongoDB connection string, e.g. `mongodb+srv://…/gigclip`       |
+| `CLOUDINARY_URL`        | yes\*    | Cloudinary upload URL                                          |
+| `CLOUDINARY_API_KEY`    | yes\*    | Cloudinary key                                                 |
+| `CLOUDINARY_API_SECRET` | yes\*    | Cloudinary secret                                              |
+
+\* Required by the feature that consumes it; the landing and auth screens run without them.
+
+```env
+DATABASE_URL=postgresql://user:password@ep-xxxx-pooler.region.aws.neon.tech/neondb?sslmode=require
+AUTH_SECRET=replace-me
+MONGODB_URI=mongodb+srv://user:password@cluster.mongodb.net/gigclip
+CLOUDINARY_URL=cloudinary://key:secret@cloud-name
+CLOUDINARY_API_KEY=...
+CLOUDINARY_API_SECRET=...
+```
+
+`.env.local` is git-ignored. Never commit real credentials.
+
+### 3. Sync the Postgres schema
+
+```bash
+npx drizzle-kit generate   # regenerate SQL from lib/db/schema.ts
+npx drizzle-kit migrate    # apply migrations to Neon
+```
+
+`npx drizzle-kit push` is available for quick prototyping, and `npx drizzle-kit studio` opens a table browser.
+
+### 4. Run
+
+```bash
+npm run dev
+```
+
+- Landing page — <http://localhost:3000>
+- Sign in — <http://localhost:3000/sign-in>
+- Sign up — <http://localhost:3000/sign-up>
+
+---
 
 ## Scripts
 
-```bash
-npm run dev     # start dev server
-npm run build   # production build
-npm run lint    # eslint
-```
+| Command         | Description                    |
+| --------------- | ------------------------------ |
+| `npm run dev`   | Start the dev server (Turbopack) |
+| `npm run build` | Production build + type check  |
+| `npm run start` | Serve the production build     |
+| `npm run lint`  | Run ESLint                     |
+
+---
+
+## Design System
+
+The UI follows **DESIGN.md** (the "Slush" sticker-book aesthetic), and it is not optional:
+
+- **Palette only:** carbon `#000`, paper-white `#fff`, sky-wash `#dceeff`, concrete-gray `#ccc`, soft-mist `#e9e9e9`, electric-blue `#4da2ff`, mint-pop `#55db9c`, lavender `#e9ccff`, ember `#fb4903`, sunburst `#ffd731`, voltage-violet `#5c4ade`.
+- **No gradients, no box-shadows.** Depth comes from flat color and 1px carbon borders.
+- **Radii:** pills `rounded-pills` (1600px) for buttons/tags, `rounded-cards` (20px) for inputs and cards, `rounded-cards-elevated` (40px) and `rounded-4xl` for panels.
+- **Type:** `font-lateral` for display headings (tight leading, crushed), `font-aeonik-pro` for body and UI.
+- **CTAs** are carbon-filled or outlined pills. Electric blue is decorative, never a button fill.
+- **Section rhythm:** sky-wash → carbon → white → mint-pop → lavender → carbon footer.
+
+Forms reuse one border recipe (`rounded-cards border border-carbon`) with an ember focus outline, so every field — including the password field with its absolute eye toggle and the bio textarea with its character counter — matches exactly.
+
+---
+
+## Implementation Status
+
+**Done**
+
+- [x] Landing page: hero, jobs, how-it-works, FAQ, testimonials, contact, full-bleed footer.
+- [x] Responsive split auth screens with an animated Lottie poster.
+- [x] Role-aware sign-up and sign-in forms wired to react-hook-form + Zod (blur validation, inline errors, password toggles, bio counter, role toggle with clean remount).
+- [x] Shared Zod schemas and typed field configs in `constants/`.
+- [x] Auth.js Credentials provider, bcrypt hashing, JWT session with typed `role`.
+- [x] Drizzle schema for `users`, `employee_profiles`, `employer_profiles` on Neon.
+- [x] `lib/db/user.db.ts` lookups (`getUserByEmail`, `getUserById`).
+
+**Next**
+
+- [ ] `POST /api/auth/register` — hash password, insert `users` + profile in one transaction.
+- [ ] Point `SUPForm` / `SINForm` `onSubmit` at the real endpoints (keep the toast UX).
+- [ ] Mongo connection singleton (`lib/mongodb.ts`) and Mongoose models for `jobs`, `resumes`, `applications`.
+- [ ] Job create/list APIs, Cloudinary resume upload with size/type limits.
+- [ ] Application pipeline with server-validated status transitions.
+- [ ] Route protection for employer-only pages and the candidate dashboard.
+- [ ] Seed the demo accounts and a handful of sample jobs.
+
+> `components/GradientWaves.tsx` carries pre-existing lint errors (`no-explicit-any` plus two unused expressions). They are unrelated to feature work.
+
+---
+
+## Demo Accounts
+
+The UI advertises two demo logins (password `demo1234`):
+
+| Role      | Email                 |
+| --------- | --------------------- |
+| Employer  | `employer@demo.com`   |
+| Candidate | `candidate@demo.com`  |
+
+They will exist once the seed script and registration flow are in place.
+
+---
+
+## License
+
+MIT © 2026 GigClip — see [LICENSE](LICENSE).

@@ -2,18 +2,16 @@ CREATE TYPE "user_role" AS ENUM('employee', 'employer');--> statement-breakpoint
 CREATE TABLE "employee_profiles" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid(),
 	"user_id" uuid NOT NULL UNIQUE,
-	"username" text UNIQUE,
-	"bio" text,
-	"skills" text[] DEFAULT '{}'::text[] NOT NULL
+	"job_title" text NOT NULL,
+	"skills" text[] DEFAULT '{}'::text[] NOT NULL,
+	"bio" text NOT NULL
 );
 --> statement-breakpoint
 CREATE TABLE "employer_profiles" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid(),
 	"user_id" uuid NOT NULL UNIQUE,
-	"company_name" text NOT NULL,
-	"company_website" text,
-	"company_description" text,
-	"company_logo" text
+	"company" text NOT NULL,
+	"bio" text NOT NULL
 );
 --> statement-breakpoint
 CREATE TABLE "users" (
@@ -22,7 +20,6 @@ CREATE TABLE "users" (
 	"email" text NOT NULL UNIQUE,
 	"password_hash" text NOT NULL,
 	"role" "user_role" NOT NULL,
-	"email_verified" timestamp with time zone,
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
 	"updated_at" timestamp with time zone DEFAULT now() NOT NULL
 );

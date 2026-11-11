@@ -2,7 +2,7 @@
   "type": "base",
   "version": "9",
   "dialect": "postgres",
-  "id": "4e427b4f-4f2d-47e3-a29e-8b73c018d053",
+  "id": "b5a05b97-b127-4d01-8a82-da5979731237",
   "prevIds": [
     "00000000-0000-0000-0000-000000000000"
   ],
@@ -38,8 +38,7 @@
         "n|rel|public.employee_profiles",
         "n|type|public.employee_profiles",
         "n|rel|public.employee_profiles_pkey",
-        "n|rel|public.employee_profiles_user_id_key",
-        "n|rel|public.employee_profiles_username_key"
+        "n|rel|public.employee_profiles_user_id_key"
       ],
       "reads": [
         "n|sch|public"
@@ -190,23 +189,10 @@
     {
       "schema": "public",
       "table": "employee_profiles",
-      "name": "username",
+      "name": "job_title",
       "type": "text",
       "typeSchema": null,
-      "notNull": false,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "entityType": "columns"
-    },
-    {
-      "schema": "public",
-      "table": "employee_profiles",
-      "name": "bio",
-      "type": "text",
-      "typeSchema": null,
-      "notNull": false,
+      "notNull": true,
       "dimensions": 0,
       "default": null,
       "generated": null,
@@ -222,6 +208,19 @@
       "notNull": true,
       "dimensions": 1,
       "default": "'{}'",
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "employee_profiles",
+      "name": "bio",
+      "type": "text",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
       "generated": null,
       "identity": null,
       "entityType": "columns"
@@ -255,7 +254,7 @@
     {
       "schema": "public",
       "table": "employer_profiles",
-      "name": "company_name",
+      "name": "company",
       "type": "text",
       "typeSchema": null,
       "notNull": true,
@@ -268,36 +267,10 @@
     {
       "schema": "public",
       "table": "employer_profiles",
-      "name": "company_website",
+      "name": "bio",
       "type": "text",
       "typeSchema": null,
-      "notNull": false,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "entityType": "columns"
-    },
-    {
-      "schema": "public",
-      "table": "employer_profiles",
-      "name": "company_description",
-      "type": "text",
-      "typeSchema": null,
-      "notNull": false,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "entityType": "columns"
-    },
-    {
-      "schema": "public",
-      "table": "employer_profiles",
-      "name": "company_logo",
-      "type": "text",
-      "typeSchema": null,
-      "notNull": false,
+      "notNull": true,
       "dimensions": 0,
       "default": null,
       "generated": null,
@@ -363,19 +336,6 @@
       "type": "user_role",
       "typeSchema": "public",
       "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "entityType": "columns"
-    },
-    {
-      "schema": "public",
-      "table": "users",
-      "name": "email_verified",
-      "type": "timestamp with time zone",
-      "typeSchema": null,
-      "notNull": false,
       "dimensions": 0,
       "default": null,
       "generated": null,
@@ -479,17 +439,6 @@
       "nameExplicit": false,
       "columns": [
         "user_id"
-      ],
-      "nullsNotDistinct": false,
-      "entityType": "uniques"
-    },
-    {
-      "schema": "public",
-      "table": "employee_profiles",
-      "name": "employee_profiles_username_key",
-      "nameExplicit": false,
-      "columns": [
-        "username"
       ],
       "nullsNotDistinct": false,
       "entityType": "uniques"
