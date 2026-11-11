@@ -1,42 +1,7 @@
+import { JOB_VARIETIES } from "@/constants";
 import React from "react";
 
-const JOB_VARIETIES = [
-  {
-    glyph: "FT",
-    title: "Full-Time",
-    color: "bg-sunburst",
-    blurb: "The intentional nine-to-five: real benefits, a real team, and a corner of the sticker universe to call home.",
-    openings: "40+",
-  },
-  {
-    glyph: "PT",
-    title: "Part-Time",
-    color: "bg-mint-pop",
-    blurb: "Balanced by design — school, family or a side hustle gets equal billing with the work.",
-    openings: "15+",
-  },
-  {
-    glyph: "CT",
-    title: "Contract",
-    color: "bg-lavender",
-    blurb: "Fixed-scope missions for craftspeople who ship hard and bounce clean.",
-    openings: "12+",
-  },
-  {
-    glyph: "IN",
-    title: "Internship",
-    color: "bg-electric-blue",
-    blurb: "Green horns welcome. Mentorship-heavy roles to cut your teeth on.",
-    openings: "8+",
-  },
-  {
-    glyph: "RE",
-    title: "Remote",
-    color: "bg-voltage-violet",
-    blurb: "Anywhere with Wi-Fi and a good chair. No commute, no compromise.",
-    openings: "20+",
-  },
-];
+
 
 export default function Jobs() {
   return (

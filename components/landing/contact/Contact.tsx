@@ -2,11 +2,11 @@
 
 import React, { useState } from "react";
 import { FeedbackSlider } from "./FeedbackSlider";
+import { FIELD_CLASS, LABEL_CLASS } from "@/constants";
+import EmberIcon from "../icons/EmberIcon";
+import SunburstIcon from "../icons/SunburstIcon";
+import MintIcon from "../icons/MintIcon";
 
-const LABEL_CLASS = "mb-2 block text-[12px] font-bold uppercase tracking-[0.032em]";
-
-const FIELD_CLASS =
-  "w-full rounded-cards border border-carbon bg-paper-white px-5 py-3 text-[15px] font-medium tracking-[-0.01px] placeholder:text-carbon/40 outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ember";
 
 export default function Contact() {
   const [submitted, setSubmitted] = useState(false);
@@ -19,21 +19,9 @@ export default function Contact() {
   return (
     <section id="contact" className="flex h-screen w-full items-center justify-center">
       <div className="relative mx-auto flex min-h-9/10 w-full flex-col items-center justify-center gap-12 overflow-hidden rounded-4xl px-6 py-16 sm:px-10">
-        <div className="pointer-events-none absolute left-10 top-14 hidden rotate-[-8deg] lg:block">
-          <span className="inline-flex size-14 items-center justify-center rounded-[20px] border border-carbon bg-ember text-[22px] font-bold text-paper-white">
-            ✉
-          </span>
-        </div>
-        <div className="pointer-events-none absolute right-12 top-24 hidden rotate-10 lg:block">
-          <span className="inline-flex size-16 items-center justify-center rounded-[20px] border border-carbon bg-sunburst text-[22px] font-bold">
-            ✦
-          </span>
-        </div>
-        <div className="pointer-events-none absolute bottom-16 left-1/4 hidden rotate-6 lg:block">
-          <span className="inline-flex size-12 items-center justify-center rounded-[20px] border border-carbon bg-mint-pop text-[18px] font-bold">
-            ✓
-          </span>
-        </div>
+        <EmberIcon color="white" position="left-10 top-14" icon="✉" />
+        <SunburstIcon color="black" position="right-12 top-24" icon="✦" />
+        <MintIcon color="black" position="bottom-16 left-1/4" icon="✓" />
 
         <div className="flex flex-col items-center gap-6 text-center">
           <p className="rounded-pills border border-carbon bg-paper-white px-24 py-2 text-[13px] font-bold uppercase tracking-[0.032em]">

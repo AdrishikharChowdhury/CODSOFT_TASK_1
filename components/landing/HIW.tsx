@@ -1,25 +1,7 @@
+import { STEPS } from "@/constants";
 import React from "react";
 
-const STEPS = [
-  {
-    numeral: "01",
-    title: "SEARCH",
-    color: "bg-sunburst",
-    body: "Type a keyword, pick a location and filter by full-time, remote or contract — the board narrows down to your match.",
-  },
-  {
-    numeral: "02",
-    title: "CLIP & APPLY",
-    color: "bg-mint-pop",
-    body: "Attach one resume and a short note. Your application clips straight onto the employer's board in under a minute.",
-  },
-  {
-    numeral: "03",
-    title: "GET UPDATES",
-    color: "bg-lavender",
-    body: "Track submitted → reviewing → interview → offered. Email and in-app alerts land the moment the status changes.",
-  },
-];
+
 
 export default function HIW() {
   return (
