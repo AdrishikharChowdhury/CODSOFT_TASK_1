@@ -2,9 +2,10 @@ import {
   JOB_TYPE_LINKS,
   MARQUEE_ITEMS,
   NAVIGATE_LINKS,
-  LINK_CLASS,
   COLUMN_TITLE_CLASS,
 } from "@/constants";
+import FooterNav from "./FooterNav";
+import JobLinkItem from "./JobLinkItem";
 
 export default function Footer() {
   return (
@@ -31,12 +32,8 @@ export default function Footer() {
         <nav aria-label="Footer navigation">
           <h3 className={COLUMN_TITLE_CLASS}>Navigate</h3>
           <ul className="flex flex-col items-start gap-3">
-            {NAVIGATE_LINKS.map((link) => (
-              <li key={link.href}>
-                <a href={link.href} className={LINK_CLASS}>
-                  {link.label}
-                </a>
-              </li>
+            {NAVIGATE_LINKS.map(({ href, label }) => (
+              <FooterNav key={href} href={href} label={label} />
             ))}
           </ul>
         </nav>
@@ -44,17 +41,13 @@ export default function Footer() {
         <nav aria-label="Job types">
           <h3 className={COLUMN_TITLE_CLASS}>Find Work</h3>
           <div className="flex flex-wrap gap-2">
-            {JOB_TYPE_LINKS.map((type) => (
-              <a
-                key={type.label}
-                href="#jobs"
-                className={`inline-flex items-center gap-2 rounded-pills border border-carbon px-6 py-1.5 text-[12px] font-bold tracking-[0.03em] text-carbon transition-transform hover:-rotate-3 hover:scale-105 ${type.color}`}
-              >
-                <span className="font-lateral text-[10px] leading-none opacity-70">
-                  {type.glyph}
-                </span>
-                {type.label}
-              </a>
+            {JOB_TYPE_LINKS.map(({ label, color, glyph }) => (
+              <JobLinkItem
+                key={label}
+                label={label}
+                color={color}
+                glyph={glyph}
+              />
             ))}
             <a
               href="#contact"

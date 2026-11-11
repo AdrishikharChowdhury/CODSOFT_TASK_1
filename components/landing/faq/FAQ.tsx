@@ -1,5 +1,6 @@
 import { FAQ_ITEMS } from "@/constants";
 import React from "react";
+import FAQCard from "./FAQCard";
 
 export default function FAQ() {
   return (
@@ -16,28 +17,13 @@ export default function FAQ() {
         </div>
 
         <div className="grid w-full gap-5 md:grid-cols-2">
-          {FAQ_ITEMS.map((item, index) => (
-            <article
-              key={item.question}
-              className="flex items-start gap-4 rounded-cards border border-carbon bg-paper-white p-6"
-            >
-              
-              <div>
-                <h3 className="text-subheading font-bold leading-[1.2] tracking-[-0.01px] flex gap-5 items-center">
-                  <span
-                    className={`flex size-10 shrink-0 items-center justify-center rounded-[20px] border border-carbon font-lateral text-md leading-none ${
-                      ["bg-sunburst", "bg-mint-pop", "bg-lavender", "bg-electric-blue", "bg-ember", "bg-voltage-violet"][index % 6]
-                    }`}
-                  >
-                    ?
-                  </span>
-                  <span>{item.question}</span>
-                </h3>
-                <p className="mt-2 text-[14px] font-medium leading-[1.39] tracking-[-0.01px]">
-                  {item.answer}
-                </p>
-              </div>
-            </article>
+          {FAQ_ITEMS.map(({ question, answer }, index) => (
+            <FAQCard
+              question={question}
+              answer={answer}
+              index={index}
+              key={question}
+            />
           ))}
         </div>
 

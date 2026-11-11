@@ -1,8 +1,8 @@
 import Banner from "@/components/landing/Banner";
-import Contact from "@/components/landing/Contact";
-import FAQ from "@/components/landing/FAQ";
-import HIW from "@/components/landing/HIW";
-import Jobs from "@/components/landing/Jobs";
+import Contact from "@/components/landing/contact/Contact";
+import FAQ from "@/components/landing/faq/FAQ";
+import HIW from "@/components/landing/hiw/HIW";
+import Jobs from "@/components/landing/jobs/Jobs";
 import React from "react";
 
 
