@@ -1,24 +1,16 @@
 import React from "react";
+import EmberIcon from "./icons/EmberIcon";
+import SunburstIcon from "./icons/SunburstIcon";
+import MintIcon from "./icons/MintIcon";
 
 export default function Banner() {
   return (
     <section className="relative z-10 flex h-screen w-full flex-col items-center justify-center gap-10 px-6 py-28 text-center sm:px-10" id="home">
-      <div className="pointer-events-none absolute left-8 top-1/4 hidden rotate-[-8deg] lg:block">
-        <span className="inline-flex size-14 items-center justify-center rounded-[20px] border border-carbon bg-ember text-[22px] font-bold">
-          ✦
-        </span>
-      </div>
-      <div className="pointer-events-none absolute right-10 top-1/3 hidden rotate-10 lg:block">
-        <span className="inline-flex size-40 items-center justify-center rounded-[20px] border border-carbon bg-sunburst text-[18px] font-bold">
-          ★
-        </span>
-      </div>
-      <div className="pointer-events-none absolute bottom-24 right-1/4 hidden -rotate-6 lg:block">
-        <span className="inline-flex size-40 items-center justify-center rounded-[20px] border border-carbon bg-mint-pop text-[18px] font-bold">
-          ✓
-        </span>
-      </div>
-
+      
+      <EmberIcon position="left-8 top-1/4" icon="✦" color="black" />
+      <SunburstIcon position="right-10 top-1/3" icon="★" color="black" />
+      <MintIcon position="bottom-24 right-1/4" icon="✓" color="black" />
+      
       <p className="rounded-pills border border-carbon bg-paper-white/90 px-24 py-2 text-md font-extrabold uppercase tracking-[0.032em]">
         GigClip · New roles added daily
       </p>

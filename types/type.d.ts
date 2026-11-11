@@ -6,3 +6,15 @@ export type FeedbackCard = {
   text: string;
   rating: number;
 };
+
+export type LandingLink = {
+  href: string;
+  label: string;
+  cta?: boolean;
+};
+
+export type IconProps = {
+  icon: string;
+  position: string;
+  color: string;
+};
