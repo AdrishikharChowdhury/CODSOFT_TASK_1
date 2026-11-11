@@ -1,4 +1,5 @@
 import Background from "@/components/landing/Background";
+import Footer from "@/components/landing/footer/Footer";
 import Navbar from "@/components/landing/Navbar";
 import { ReactNode } from "react";
 
@@ -10,6 +11,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         <Navbar />
         <div className="mt-20 flex-1">{children}</div>
       </div>
+      <Footer />
     </main>
   );
 }
