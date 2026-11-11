@@ -1,11 +1,9 @@
 import { FeedbackCard } from '@/types/type';
-import Stars from './Stars';
 import { AVATAR_COLORS } from '@/constants';
 
 const FeedbackCardItem = ({ card, index }: { card: FeedbackCard; index: number }) => {
   return (
     <article className="mb-5 flex flex-col gap-3 rounded-cards border border-carbon bg-paper-white p-6">
-      <Stars rating={card.rating} />
       <p className="text-[14px] font-medium leading-[1.39] tracking-[-0.01px]">
         &ldquo;{card.text}&rdquo;
       </p>
