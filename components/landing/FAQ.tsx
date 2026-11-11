@@ -1,37 +1,5 @@
+import { FAQ_ITEMS } from "@/constants";
 import React from "react";
-
-const FAQ_ITEMS = [
-  {
-    question: "Is GigClip free to use?",
-    answer:
-      "Yes. Candidates pay nothing, ever. Posting a job is also free during the demo — the whole board runs on stickers and good intentions.",
-  },
-  {
-    question: "What do I need to apply for a job?",
-    answer:
-      "Just one resume (PDF, DOC/DOCX, TXT or ODT, under 5 MB) and an optional cover note. The whole application takes under a minute.",
-  },
-  {
-    question: "How do employers review applications?",
-    answer:
-      "Every application lands on the employer's desk with the resume attached. They move it through statuses — submitted, reviewing, interview, offered — and you get an email + in-app alert on every change.",
-  },
-  {
-    question: "Can I use GigClip on my phone?",
-    answer:
-      "Absolutely. The entire site is mobile-first — search, apply, post and review from any screen size, pill buttons included.",
-  },
-  {
-    question: "Is my resume safe?",
-    answer:
-      "Your resume lives only on your profile and is visible to the employer of the job you applied to. Nothing is shared publicly, ever.",
-  },
-  {
-    question: "How do I try the demo?",
-    answer:
-      "Use employer@demo.com or candidate@demo.com with password demo1234 — both roles are pre-loaded with sample data so you can click around instantly.",
-  },
-];
 
 export default function FAQ() {
   return (
