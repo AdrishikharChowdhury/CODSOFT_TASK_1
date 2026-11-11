@@ -1,0 +1,149 @@
+{
+  "type": "diff",
+  "version": "9",
+  "dialect": "postgres",
+  "id": "fc5d7bcc-968b-459c-bd85-d0001c4a0bdc",
+  "prevIds": [
+    "b5a05b97-b127-4d01-8a82-da5979731237"
+  ],
+  "footprints": [
+    {
+      "statementType": "add_column",
+      "statementTarget": [
+        "column",
+        "public",
+        "employee_profiles",
+        "created_at"
+      ],
+      "writes": [
+        "s|col|public.employee_profiles.created_at",
+        "n|col|public.employee_profiles.created_at",
+        "e|col|public.employee_profiles.created_at"
+      ],
+      "reads": [
+        "n|tbl|public.employee_profiles",
+        "n|sch|public"
+      ]
+    },
+    {
+      "statementType": "add_column",
+      "statementTarget": [
+        "column",
+        "public",
+        "employee_profiles",
+        "updated_at"
+      ],
+      "writes": [
+        "s|col|public.employee_profiles.updated_at",
+        "n|col|public.employee_profiles.updated_at",
+        "e|col|public.employee_profiles.updated_at"
+      ],
+      "reads": [
+        "n|tbl|public.employee_profiles",
+        "n|sch|public"
+      ]
+    },
+    {
+      "statementType": "add_column",
+      "statementTarget": [
+        "column",
+        "public",
+        "employer_profiles",
+        "created_at"
+      ],
+      "writes": [
+        "s|col|public.employer_profiles.created_at",
+        "n|col|public.employer_profiles.created_at",
+        "e|col|public.employer_profiles.created_at"
+      ],
+      "reads": [
+        "n|tbl|public.employer_profiles",
+        "n|sch|public"
+      ]
+    },
+    {
+      "statementType": "add_column",
+      "statementTarget": [
+        "column",
+        "public",
+        "employer_profiles",
+        "updated_at"
+      ],
+      "writes": [
+        "s|col|public.employer_profiles.updated_at",
+        "n|col|public.employer_profiles.updated_at",
+        "e|col|public.employer_profiles.updated_at"
+      ],
+      "reads": [
+        "n|tbl|public.employer_profiles",
+        "n|sch|public"
+      ]
+    }
+  ],
+  "deltas": [
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "employee_profiles",
+        "name": "created_at",
+        "type": "timestamp with time zone",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "now()",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "employee_profiles",
+        "name": "updated_at",
+        "type": "timestamp with time zone",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "now()",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "employer_profiles",
+        "name": "created_at",
+        "type": "timestamp with time zone",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "now()",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "employer_profiles",
+        "name": "updated_at",
+        "type": "timestamp with time zone",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "now()",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    }
+  ]
+}
