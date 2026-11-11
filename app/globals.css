@@ -84,6 +84,7 @@
 
   /* Animation */
   --animate-marquee-y: marquee-y 28s linear infinite;
+  --animate-marquee-x: marquee-x 24s linear infinite;
 
   @keyframes marquee-y {
     from {
@@ -91,6 +92,15 @@
     }
     to {
       transform: translateY(-50%);
+    }
+  }
+
+  @keyframes marquee-x {
+    from {
+      transform: translateX(0);
+    }
+    to {
+      transform: translateX(-50%);
     }
   }
 }
