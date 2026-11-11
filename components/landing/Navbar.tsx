@@ -51,9 +51,10 @@ export default function Navbar() {
     e: React.MouseEvent<HTMLAnchorElement>,
     href: string
   ) {
-    e.preventDefault();
+    if (!href.startsWith("#")) return;
     const target = document.getElementById(href.slice(1));
     if (!target) return;
+    e.preventDefault();
     target.scrollIntoView({ behavior: "smooth", block: "start" });
     history.replaceState(null, "", href);
     setActiveHref(href);

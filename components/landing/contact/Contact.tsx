@@ -18,7 +18,7 @@ export default function Contact() {
 
   return (
     <section id="contact" className="flex h-screen w-full items-center justify-center">
-      <div className="relative mx-auto flex min-h-9/10 w-full flex-col items-center justify-center gap-12 overflow-hidden rounded-4xl bg-lavender px-6 py-16 sm:px-10">
+      <div className="relative mx-auto flex min-h-9/10 w-full flex-col items-center justify-center gap-12 overflow-hidden rounded-4xl px-6 py-16 sm:px-10">
         <div className="pointer-events-none absolute left-10 top-14 hidden rotate-[-8deg] lg:block">
           <span className="inline-flex size-14 items-center justify-center rounded-[20px] border border-carbon bg-ember text-[22px] font-bold text-paper-white">
             ✉
