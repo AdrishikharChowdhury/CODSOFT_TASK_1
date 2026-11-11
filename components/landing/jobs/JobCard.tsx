@@ -1,12 +1,5 @@
+import { JobCardProps } from "@/types/type";
 import React from "react";
-
-export type JobCardProps = {
-  title: string;
-  color: string;
-  glyph: string;
-  blurb: string;
-  openings: string;
-};
 
 const JobCard = ({ title, color, glyph, blurb, openings }: JobCardProps) => {
   return (
